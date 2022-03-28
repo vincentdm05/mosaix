@@ -1,0 +1,16 @@
+
+# Folders
+bin/
+build/
+test/
+
+# Images
+*.ppm
+*.png
+
+# Project files
+*.sublime-project
+*.sublime-workspace
+
+# Misc
+.DS_Store
