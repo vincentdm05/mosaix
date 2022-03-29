@@ -27,7 +27,7 @@ bool Image::load(const char* filename)
 
 	std::cout << "Successfully loaded image '" << filename <<
 		"' with size " << width << "x" << height <<
-		" and " << channels << "channels." << std::endl;
+		" and " << channels << " channels." << std::endl;
 
 	return true;
 }
