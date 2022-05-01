@@ -1,26 +1,32 @@
 
 #include <Image.h>
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 
 int main(int argc, char *argv[])
 {
-	const char* sourceFilename = argv[1];
-	const char* folderFilename = argv[2];
+	std::filesystem::path sourceFilename = argv[1];
+	std::filesystem::path folderFilename = argv[2];
 
 	std::cout << "Source: " << sourceFilename << std::endl;
 	std::cout << "Folder: " << folderFilename << std::endl;
 
-	Image destImage;
-	destImage.load(sourceFilename);
+	Image sourceImage;
+	sourceImage.load(sourceFilename.c_str());
 
-	const int tileSize = 16;
-	destImage.computeTileMeans(tileSize);
+	Image tileMeans;
+	const int tileSize = 64;
+	sourceImage.computeTileMeans(tileMeans, tileSize);
 
-	std::string destFilename(sourceFilename);
-	destFilename.append(".png");
-	destImage.write(destFilename.c_str());
+	Image croppedImage;
+	const int newSize = tileSize;
+	sourceImage.cropToSquare(croppedImage, newSize, newSize);
+
+	std::filesystem::path destFilename(sourceFilename);
+	destFilename.replace_extension(std::to_string(newSize) + ".png");
+	croppedImage.write(destFilename.c_str());
 
 	return 0;
 }
