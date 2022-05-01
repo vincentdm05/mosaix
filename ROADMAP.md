@@ -11,6 +11,12 @@
 - [ ] Allow choosing output image size
 - [ ] Allow choosing size of tiles
 
+> Intermediate stage: refactor and cleanup
+
+- [ ] Pick a code style convention (e.g. https://google.github.io/styleguide/cppguide.html)
+- [ ] Refactor to follow convention
+- [ ] Remove all unnecessary code and comments, and close TODOs
+
 # Usability
 
 > Goal: Ease of use, debugging
@@ -22,6 +28,11 @@
 - [ ] View result image
 - [ ] Browse folder images
 - [ ] Print stats
+
+> Intermediate stage: optimize
+
+- [ ] Profile and find bottlenecks
+- [ ] Multithreading
 
 # More
 
