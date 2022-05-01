@@ -67,7 +67,7 @@ fi
 toolDir="${rootDir}/tools"
 
 # Build the code
-( "${toolDir}/build.sh" )
+( "${toolDir}/build.sh" ) || exit 1
 
 execName="${rootDir}/bin/mosaix"
 
