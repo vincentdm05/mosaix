@@ -1,5 +1,7 @@
 #include <Image.h>
 
+#include <Pixel.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -47,6 +49,17 @@ void Image::reset()
 	data = nullptr;
 }
 
+bool Image::isValid() const
+{
+	return width > 0 &&
+		width < MAX_SIDE_LENGTH &&
+		height > 0 &&
+		height < MAX_SIDE_LENGTH &&
+		channels > 0 &&
+		channels < MAX_CHANNELS &&
+		data != nullptr;
+}
+
 bool Image::load(const char* filename)
 {
 	if (data)
@@ -67,7 +80,7 @@ bool Image::load(const char* filename)
 	return true;
 }
 
-bool Image::write(const char* filename)
+bool Image::write(const char* filename) const
 {
 	if (0 == stbi_write_png(filename, width, height, channels, (const void*)data, 0))
 	{
@@ -80,7 +93,48 @@ bool Image::write(const char* filename)
 	return true;
 }
 
-void Image::computeTileMeans(Image& tileMeans, int tileSize)
+void Image::computeTileMean(Pixel& meanPixel, int tileStartX, int tileStartY, int tileSize) const
+{
+	computeTileMean(meanPixel.r, meanPixel.g, meanPixel.b, meanPixel.a, tileStartX, tileStartY, tileSize);
+}
+
+void Image::computeTileMean(float& meanR, float& meanG, float& meanB, float& meanA, int tileStartX, int tileStartY, int tileSize) const
+{
+	int numSamples = 0;
+	meanR = 0.0f;
+	meanG = 0.0f;
+	meanB = 0.0f;
+	meanA = 0.0f;
+
+	for (int indexInTile = 0; indexInTile < tileSize * tileSize; indexInTile++)
+	{
+		const int y = tileStartY + indexInTile / tileSize;
+		const int x = tileStartX + indexInTile % tileSize;
+
+		if (x < width && y < height)
+		{
+			float r, g, b, a;
+			readPixel(r, g, b, a, x, y);
+			meanR += r;
+			meanG += g;
+			meanB += b;
+			meanA += a;
+
+			numSamples++;
+		}
+	}
+
+	if (numSamples)
+	{
+		const float normalizationFactor = 1.0f / float(numSamples);
+		meanR *= normalizationFactor;
+		meanG *= normalizationFactor;
+		meanB *= normalizationFactor;
+		meanA *= normalizationFactor;
+	}
+}
+
+void Image::computeTileMeans(Image& tileMeans, int tileSize) const
 {
 	const int numTilesX = (width + tileSize - 1) / tileSize;
 	const int numTilesY = (height + tileSize - 1) / tileSize;
@@ -91,41 +145,37 @@ void Image::computeTileMeans(Image& tileMeans, int tileSize)
 
 	for (int tileY = 0; tileY < numTilesY; tileY++)
 	{
+		const int tileStartY = tileY * tileSize;
+
 		for (int tileX = 0; tileX < numTilesX; tileX++)
 		{
-			float numSamples = 0.0f;
-			float meanR = 0.0f;
-			float meanG = 0.0f;
-			float meanB = 0.0f;
-			float meanA = 0.0f;
-			for (int indexInTile = 0; indexInTile < tileSize * tileSize; indexInTile++)
-			{
-				const int y = tileY * tileSize + indexInTile / tileSize;
-				const int x = tileX * tileSize + indexInTile % tileSize;
+			const int tileStartX = tileX * tileSize;
 
-				if (x < width && y < height)
-				{
-					float r, g, b, a;
-					readPixel(r, g, b, a, x, y);
-					meanR += r;
-					meanG += g;
-					meanB += b;
-					meanA += a;
-
-					numSamples += 1.0f;
-				}
-			}
-
-			if (numSamples)
-			{
-				const float normalizationFactor = 1.0f / numSamples;
-				meanR *= normalizationFactor;
-				meanG *= normalizationFactor;
-				meanB *= normalizationFactor;
-				meanA *= normalizationFactor;
-			}
+			float meanR, meanG, meanB, meanA;
+			computeTileMean(meanR, meanG, meanB, meanA, tileStartX, tileStartY, tileSize);
 
 			tileMeans.writePixel(meanR, meanG, meanB, meanA, tileX, tileY);
+		}
+	}
+}
+
+void Image::replaceTile(const Image& tile, int tileStartX, int tileStartY)
+{
+	assert(tileStartX < width);
+	assert(tileStartY < height);
+
+	for (int tileY = 0; tileY < tile.getHeight(); tileY++)
+	{
+		const int y = tileStartY + tileY;
+		for (int tileX = 0; tileX < tile.getWidth(); tileX++)
+		{
+			const int x = tileStartX + tileX;
+			if (x < width && y < height)
+			{
+				Pixel pixel;
+				tile.readPixel(pixel, tileX, tileY);
+				writePixel(pixel, x, y);
+			}
 		}
 	}
 }
@@ -133,6 +183,11 @@ void Image::computeTileMeans(Image& tileMeans, int tileSize)
 int Image::sizeInBytes() const
 {
 	return width * height * channels;
+}
+
+void Image::readPixel(Pixel& pixel, int x, int y) const
+{
+	readPixel(pixel.r, pixel.g, pixel.b, pixel.a, x, y);
 }
 
 void Image::readPixel(float& r, float& g, float& b, float& a, int x, int y) const
@@ -150,6 +205,11 @@ void Image::readPixel(float& r, float& g, float& b, float& a, int x, int y) cons
 		b = float(*(p + 2)) / 255.0f;
 	if (channels > 3)
 		a = float(*(p + 3)) / 255.0f;
+}
+
+void Image::writePixel(const Pixel& pixel, int x, int y)
+{
+	writePixel(pixel.r, pixel.g, pixel.b, pixel.a, x, y);
 }
 
 void Image::writePixel(float r, float g, float b, float a, int x, int y)
@@ -177,7 +237,7 @@ void Image::writePixel(float r, float g, float b, float a, int x, int y)
 		data[pixelIndex + 3] = uint8_t(a * 255.0f);
 }
 
-void Image::cropToSquare(Image& croppedImage, int w, int h)
+void Image::cropToSquare(Image& croppedImage, int w, int h) const
 {
 	assert(w >= 0);
 	assert(h >= 0);
@@ -227,7 +287,7 @@ void Image::cropToSquare(Image& croppedImage, int w, int h)
 		s0, t0, s1, t1);
 }
 
-void Image::resize(Image& resizedImage, int w, int h)
+void Image::resize(Image& resizedImage, int w, int h) const
 {
 	resizedImage.init(w, h, channels);
 	stbir_resize_uint8(data, getWidth(), getHeight(), 0, resizedImage.data, w, h, 0, channels);

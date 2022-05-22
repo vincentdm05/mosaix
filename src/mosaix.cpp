@@ -1,41 +1,98 @@
 
 #include <Image.h>
+#include <Mosaic.h>
 
+#include <cassert>
 #include <filesystem>
 #include <iostream>
 #include <string>
 
+struct App
+{
+	virtual void setArgs(int argc, char *argv[]) = 0;
+	virtual void run() = 0;
+};
+
+class AppPassthrough : public App
+{
+private:
+	std::filesystem::path imagePath;
+
+public:
+	void setArgs(int argc, char *argv[]) override
+	{
+		assert(argc > 1);
+		imagePath = argv[1];
+	}
+	void run() override
+	{
+		Image image;
+		image.load(imagePath.c_str());
+		std::filesystem::path outputPath(imagePath);
+		outputPath.replace_extension("passthrough.png");
+		image.write(outputPath.c_str());
+	}
+};
+
+class AppCropResizeSingleImage : public App
+{
+private:
+	std::filesystem::path imagePath;
+
+public:
+	void setArgs(int argc, char *argv[]) override
+	{
+		assert(argc > 1);
+		imagePath = argv[1];
+	}
+	void run() override
+	{
+		Image image;
+		image.load(imagePath.c_str());
+		Image croppedImage;
+		image.cropToSquare(croppedImage);
+		std::filesystem::path outputPath(imagePath);
+		outputPath.replace_extension("cropped.png");
+		croppedImage.write(outputPath.c_str());
+	}
+};
+
+class AppMosaic : public App
+{
+private:
+	std::filesystem::path imagePath;
+	std::filesystem::path folderPath;
+
+public:
+	void setArgs(int argc, char *argv[]) override
+	{
+		assert(argc > 2);
+		imagePath = argv[1];
+		folderPath = argv[2];
+	}
+	void run() override
+	{
+		const int tileSize = 16;
+		Mosaic mosaic;
+		mosaic.setTileSize(tileSize);
+		mosaic.setSourceImage(imagePath);
+		mosaic.setTilesFolder(folderPath);
+		Image mosaicImage;
+		mosaic.makeMosaicImage(mosaicImage);
+
+		std::filesystem::path outputPath(imagePath);
+		outputPath.replace_extension("mosaic" + std::to_string(tileSize) + ".png");
+		mosaicImage.write(outputPath.c_str());
+	}
+};
+
 int main(int argc, char *argv[])
 {
-	const std::filesystem::path imagePath = argv[1];
-	const std::filesystem::path folderPath = argv[2];
-	const std::filesystem::path tilesFolderPath = folderPath / "tiles";
-
-	std::cout << "Source image: " << imagePath << std::endl;
-	std::cout << "Source folder: " << folderPath << std::endl;
-	std::cout << "Output tiles folder: " << tilesFolderPath << std::endl;
-
-	if (!std::filesystem::is_directory(tilesFolderPath) && !std::filesystem::create_directory(tilesFolderPath))
-	{
-		std::cerr << "Could not create directory '" << tilesFolderPath << "'.";
-		return 1;
-	}
-
-	const int tileSize = 64;
-
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(folderPath))
-	{
-		Image sourceImage;
-		if (entry.is_regular_file() && sourceImage.load(entry.path().c_str()))
-		{
-			Image tileImage;
-			sourceImage.cropToSquare(tileImage, tileSize, tileSize);
-
-			std::filesystem::path tileFilename = tilesFolderPath / entry.path().filename();
-			tileFilename.replace_extension(std::to_string(tileSize) + ".png");
-			tileImage.write(tileFilename.c_str());
-		}
-	}
+	// AppPassthrough app;
+	// AppCropResizeSingleImage app;
+	AppMosaic app;
+	app.setArgs(argc, argv);
+	app.run();
 
 	return 0;
 }

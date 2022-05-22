@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 
+usageDisplayed=0
 usage()
 {
-	echo "usage: $0 source_image source_dir [-h|--help] [-t|--time]"
-	echo "  Builds and runs the mosaix executable with 'source_image' and 'source_dir' as inputs."
-	echo "options:"
-	echo "  -h|--help    Prints this message."
-	echo "  -t|--time    Time the execution."
+	if [[ "${usageDisplayed}" -eq 0 ]]; then
+		echo "usage: $0 source_image source_dir [-h|--help] [-t|--time]"
+		echo "  Builds and runs the mosaix executable with 'source_image' and 'source_dir' as inputs."
+		echo "options:"
+		echo "  -h|--help    Prints this message."
+		echo "  -t|--time    Time the execution."
+		usageDisplayed=1
+	fi
 }
 
 timeExec=0

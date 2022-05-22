@@ -7,7 +7,7 @@
 - [ ] For all input images, compute mean colour, then store mapping colour -> image
 - [x] Split source image into tiles, and compute mean colour for each tile
 - [ ] Replace each tile with image based on closest colour between tile mean and mapping
-- [ ] Output resulting image
+- [x] Output resulting image
 - [ ] Allow choosing output image size
 - [ ] Allow choosing size of tiles
 
