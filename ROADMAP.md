@@ -4,9 +4,9 @@
 > Goal: Program that takes one source image file as input, as well as a folder that contains all images, and outputs a mosaic image
 
 - [x] For all input images, crop to square and resize to tile size
-- [ ] For all input images, compute mean colour, then store mapping colour -> image
+- [x] For all input images, compute mean colour, then store mapping colour -> image
 - [x] Split source image into tiles, and compute mean colour for each tile
-- [ ] Replace each tile with image based on closest colour between tile mean and mapping
+- [x] Replace each tile with image based on closest colour between tile mean and mapping
 - [x] Output resulting image
 - [ ] Allow choosing output image size
 - [ ] Allow choosing size of tiles
