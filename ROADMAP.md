@@ -8,8 +8,8 @@
 - [x] Split source image into tiles, and compute mean colour for each tile
 - [x] Replace each tile with image based on closest colour between tile mean and mapping
 - [x] Output resulting image
-- [ ] Allow choosing output image size
-- [ ] Allow choosing size of tiles
+- [x] Allow choosing output image size
+- [x] Allow choosing size of tiles
 
 > Intermediate stage: refactor and cleanup
 

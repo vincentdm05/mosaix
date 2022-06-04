@@ -33,9 +33,17 @@ bool Mosaic::isValid() const
 void Mosaic::setTileSize(int size)
 {
 	assert(size > 0);
-	assert(size < 4096);
+	assert(size <= 4096);
 
 	tileSize = size;
+}
+
+void Mosaic::setScaling(float s)
+{
+	assert(s > 0.01f);
+	assert(s <= 10.0f);
+
+	scaling = s;
 }
 
 bool Mosaic::setSourceImage(const std::filesystem::path& imagePath)
@@ -43,7 +51,7 @@ bool Mosaic::setSourceImage(const std::filesystem::path& imagePath)
 	if (!sourceImage.load(imagePath.c_str()) || !sourceImage.isValid())
 		return false;
 
-	sourceImage.computeTileMeans(meanImage, tileSize);
+	sourceImage.computeTileMeans(meanImage, int(tileSize / scaling));
 
 	return true;
 }
@@ -89,8 +97,8 @@ bool Mosaic::makeMosaicImage(Image& mosaicImage) const
 	if (!isValid())
 		return false;
 
-	const int numTilesX = (sourceImage.getWidth() + tileSize - 1) / tileSize;
-	const int numTilesY = (sourceImage.getHeight() + tileSize - 1) / tileSize;
+	const int numTilesX = (int(sourceImage.getWidth() * scaling) + tileSize - 1) / tileSize;
+	const int numTilesY = (int(sourceImage.getHeight() * scaling) + tileSize - 1) / tileSize;
 
 	mosaicImage.init(numTilesX * tileSize, numTilesY * tileSize, sourceImage.getNumChannels());
 

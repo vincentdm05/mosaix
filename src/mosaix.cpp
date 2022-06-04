@@ -62,6 +62,8 @@ class AppMosaic : public App
 private:
 	std::filesystem::path imagePath;
 	std::filesystem::path folderPath;
+	float scaling = 1.0f;
+	int tileSize = -1.0f;
 
 public:
 	void setArgs(int argc, char *argv[]) override
@@ -69,19 +71,35 @@ public:
 		assert(argc > 2);
 		imagePath = argv[1];
 		folderPath = argv[2];
+		if (argc > 3)
+		{
+			scaling = std::stof(argv[3]);
+			scaling = scaling <= 0.01f ? 0.01f : scaling;
+			scaling = scaling > 10.0f ? 10.0f : scaling;
+		}
+		if (argc > 4)
+		{
+			tileSize = std::stoi(argv[4]);
+			tileSize = tileSize < 1 ? 1 : tileSize;
+			tileSize = tileSize > 4096 ? 4096 : tileSize;
+		}
+		else
+		{
+			tileSize = 16;
+		}
 	}
 	void run() override
 	{
-		const int tileSize = 16;
 		Mosaic mosaic;
 		mosaic.setTileSize(tileSize);
+		mosaic.setScaling(scaling);
 		mosaic.setSourceImage(imagePath);
 		mosaic.setTilesFolder(folderPath);
 		Image mosaicImage;
 		mosaic.makeMosaicImage(mosaicImage);
 
 		std::filesystem::path outputPath(imagePath);
-		outputPath.replace_extension("mosaic" + std::to_string(tileSize) + ".png");
+		outputPath.replace_extension("mosaic_x" + std::to_string(scaling) + "_" + std::to_string(tileSize) + ".png");
 		mosaicImage.write(outputPath.c_str());
 	}
 };

@@ -141,8 +141,6 @@ void Image::computeTileMeans(Image& tileMeans, int tileSize) const
 
 	tileMeans.init(numTilesX, numTilesY, channels);
 
-	std::cout << "Image will have " << numTilesX << " by " << numTilesY << " tiles." << std::endl;
-
 	for (int tileY = 0; tileY < numTilesY; tileY++)
 	{
 		const int tileStartY = tileY * tileSize;

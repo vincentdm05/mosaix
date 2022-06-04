@@ -4,9 +4,11 @@ usageDisplayed=0
 usage()
 {
 	if [[ "${usageDisplayed}" -eq 0 ]]; then
-		echo "usage: $0 source_image source_dir [-h|--help] [-t|--time]"
+		echo "usage: $0 source_image source_dir [-s scaling] [-T tileSize] [-h|--help] [-t|--time]"
 		echo "  Builds and runs the mosaix executable with 'source_image' and 'source_dir' as inputs."
 		echo "options:"
+		echo "  -s scaling 	 Applies 'scaling' factor to the output image size."
+		echo "  -T tileSize  Sets 'tileSize' as the size of image tiles."
 		echo "  -h|--help    Prints this message."
 		echo "  -t|--time    Time the execution."
 		usageDisplayed=1
@@ -23,6 +25,8 @@ execute()
 	fi
 }
 
+scaling=1
+tileSize=
 sourceImage=
 sourceDir=
 
@@ -30,6 +34,30 @@ sourceDir=
 while [[ $# -gt 0 ]]; do
 	arg="$1"
 	case "$arg" in
+		-s)
+		shift
+		re='^[0-9]*\.?[0-9]+$'
+		if [[ "$1" =~ $re ]]; then
+			scaling="$1"
+		else
+			echo "Input scaling \"$1\" not a floating point number." 1>&2
+			echo
+			usage
+		fi
+		shift
+		;;
+		-T)
+		shift
+		re='^[0-9]+$'
+		if [[ "$1" =~ $re ]]; then
+			tileSize="$1"
+		else
+			echo "Input tile size \"$1\" not an integer." 1>&2
+			echo
+			usage
+		fi
+		shift
+		;;
 		-h|--help)
 		usage
 		shift
@@ -50,6 +78,10 @@ while [[ $# -gt 0 ]]; do
 		;;
 	esac
 done
+
+if [[ -z "${tileSize}" && "$scaling" -eq 1 ]]; then
+	scaling=
+fi
 
 if [[ -z "${sourceImage}" ]]; then
 	echo "No source image provided." 1>&2
@@ -96,4 +128,4 @@ if [[ ! -f "${execName}" ]]; then
 fi
 
 # Run
-execute "${execName}" "${sourceImage}" "${sourceDir}"
+execute "${execName}" "${sourceImage}" "${sourceDir}" "${scaling}" "${tileSize}"
