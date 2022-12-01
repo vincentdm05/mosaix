@@ -4,21 +4,21 @@ usageDisplayed=0
 usage()
 {
 	if [[ "${usageDisplayed}" -eq 0 ]]; then
-		echo "usage: $0 source_image source_dir [-s scaling] [-T tileSize] [-h|--help] [-t|--time]"
+		echo "usage: $0 source_image source_dir [-s scaling] [-t tileSize] [-h|--help] [-p|--profile]"
 		echo "  Builds and runs the mosaix executable with 'source_image' and 'source_dir' as inputs."
 		echo "options:"
-		echo "  -s scaling 	 Applies 'scaling' factor to the output image size."
-		echo "  -T tileSize  Sets 'tileSize' as the size of image tiles."
-		echo "  -h|--help    Prints this message."
-		echo "  -t|--time    Time the execution."
+		echo "  -s scaling    Applies 'scaling' factor to the output image size."
+		echo "  -t tileSize   Sets 'tileSize' as the size of image tiles."
+		echo "  -h|--help     Prints this message."
+		echo "  -p|--profile  Time the execution."
 		usageDisplayed=1
 	fi
 }
 
-timeExec=0
+profileExec=0
 execute()
 {
-	if [[ $timeExec -eq 1 ]]; then
+	if [[ $profileExec -eq 1 ]]; then
 		time { $@ ; }
 	else
 		$@
@@ -46,7 +46,7 @@ while [[ $# -gt 0 ]]; do
 		fi
 		shift
 		;;
-		-T)
+		-t)
 		shift
 		re='^[0-9]+$'
 		if [[ "$1" =~ $re ]]; then
@@ -62,8 +62,8 @@ while [[ $# -gt 0 ]]; do
 		usage
 		shift
 		;;
-		-t|--time)
-		timeExec=1
+		-p|--profile)
+		profileExec=1
 		shift
 		;;
 		*)
