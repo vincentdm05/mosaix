@@ -9,11 +9,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 # Gather source files
-file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB SRC_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/extern/easyexif/*.cpp
+)
 
 # Set the root for include paths
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/src
+	extern/easyexif/
 	extern/stb/
 )
 

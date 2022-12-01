@@ -32,4 +32,10 @@ private:
 	int height = 0;
 	int channels = 0;
 	unsigned char* data = nullptr;
+
+	static void readPixelInternal(float& r, float& g, float& b, float& a,
+		const unsigned char* source, int width, int height, int nChannels, int x, int y);
+	int getOrientationFromExif(const char* filename) const;
+	int getRotationFromOrientation(int orientation) const;
+	void rotate(int ninetyDegreesRotateAmount);
 };

@@ -10,6 +10,7 @@
 - [x] Output resulting image
 - [x] Allow choosing output image size
 - [x] Allow choosing size of tiles
+- [x] Fix image orientation (jpeg metadata orientation flag)
 
 > Intermediate stage: refactor and cleanup
 
